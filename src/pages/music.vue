@@ -6,7 +6,7 @@
         <div class="title">
           {{key}}
         </div>
-      <div class="music" v-for="(innerItem,index) of item" :key="index" @click="playthisone(innerItem)" :class="{'green':innerItem.songmid==Maincurrentmusic.songmid}">
+      <div class="music" v-for="(innerItem,index) of item" :key="index" @click="playthisone(innerItem)" :class="{'green':innerItem.songmid==$store.state.currentmusic.songmid}">
         <img :src="innerItem.albumid" width="50px">
         {{innerItem.name}}
       </div>
@@ -20,7 +20,7 @@
 
   import MusicHeader from "./components/Header"
   import MusicTab from "./components/musictab"
-  import {player,play,musiclist,musicinfo,musicmid,currentmusic,getmusicinfo,setplaystate,setcurretmusic} from "../api/player"
+  import {player,musiclist,musicinfo,musicmid,getmusicinfo} from "../api/player"
     export default {
         name: "music",
       components:{
@@ -44,14 +44,14 @@
       },
       mounted(){
           this.MainMusiclist=musiclist;
-          this.Maincurrentmusic=currentmusic;
+          this.Maincurrentmusic=this.$store.state.currentmusic;
       },
       methods:{
         playthisone(inneritem){
           this.play=true;
-          setplaystate(this.play)
+          this.$store.commit('setplaystate',this.play)
           this.Maincurrentmusic=inneritem;
-          setcurretmusic(this.Maincurrentmusic)
+          this.$store.commit('setcurrentmusic',inneritem)
           this.ind=musicmid.indexOf(inneritem.songmid)
           player.play(musicmid,{index:this.ind})
           if(player.state=="pause")
@@ -59,6 +59,12 @@
             player.play(musicmid,{index:this.ind})
           }
         }
+      },
+      setplaystate(p){
+          this.$store.commit('setplaystate',p)
+      },
+      setcurretmusic(cm){
+        this.$store.commit('setcurrentmusic',cm)
       }
     }
 </script>

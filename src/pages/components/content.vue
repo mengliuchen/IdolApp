@@ -48,7 +48,7 @@
       },
       created(){
           this.getMembersInfo()
-        console.log("调用created")
+
       }
     }
 </script>

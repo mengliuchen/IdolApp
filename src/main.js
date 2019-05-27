@@ -10,7 +10,7 @@ import brands from '@fortawesome/fontawesome-free-brands'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-
+import store from './store'
 import animated from 'animate.css'
 
 Vue.use(animated)
@@ -26,6 +26,7 @@ Vue.config.productionTip = false
 new Vue({
   el: '#app',
   router,
+  store,
   components: { App },
   template: '<App/>'
 })

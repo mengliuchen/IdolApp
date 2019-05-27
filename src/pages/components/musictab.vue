@@ -1,14 +1,14 @@
 <template>
       <div :class="{'currentplay':!ishome,'homecurrentplay':ishome}">
         <div class="playcontent">
-          <img :src="tabcurrent.albumid" width="50px">
-          <span>{{tabcurrent.name}}</span>
+          <img :src="$store.state.currentmusic.albumid" width="50px">
+          <span>{{$store.state.currentmusic.name}}</span>
         </div>
         <div class="playicon" >
           <font-awesome-icon :icon="['fas','step-backward']" @click="prev"></font-awesome-icon>
           <div @click="playornot">
-            <font-awesome-icon :icon="['fas','play']"   v-show="!TabPlay"></font-awesome-icon>
-            <font-awesome-icon :icon="['fas','pause']"  v-show="TabPlay"></font-awesome-icon>
+            <font-awesome-icon :icon="['fas','play']"   v-show="!$store.state.play"></font-awesome-icon>
+            <font-awesome-icon :icon="['fas','pause']"  v-show="$store.state.play"></font-awesome-icon>
           </div>
           <font-awesome-icon :icon="['fas','step-forward']" @click="next"></font-awesome-icon>
         </div>
@@ -16,7 +16,7 @@
 </template>
 
 <script>
-  import {player,play,musiclist,musicinfo,musicmid,currentmusic,setcurretmusic,setplaystate} from "../../api/player.js"
+  import {player,musiclist,musicinfo,musicmid} from "../../api/player.js"
     export default {
         name: "musictab",
         props: ["ishome","ch"],
@@ -30,57 +30,56 @@
             ind:2
           }
       },
-      watch:{
-        ch:function(){
-          this.TabPlay=play
-          this.tabcurrent=currentmusic
-          console.log("this.tabcurrent"+this.tabcurrent)
-        }
-      },
       mounted(){
           this.TabMusiclist=musiclist;
-          this.tabcurrent=currentmusic;
+          this.tabcurrent=this.$store.state.currentmusic
           this.TabMusic=musicinfo;
-          console.log(musicmid,currentmusic)
+          console.log(musicmid,this.$store.state.currentmusic);
           this.Tablen=musicinfo.length;
-          this.TabPlay=play;
+          this.TabPlay=this.$store.state.play;
       },
       methods:{
         playornot(){
           if(player.state=="ready")
-          {console.log(musicinfo,currentmusic)
-            console.log(this.ind)
-            this.ind=musicmid.indexOf(currentmusic.songmid)
+          {
+            this.ind=musicmid.indexOf(this.$store.state.currentmusic.songmid)
             player.play(musicmid,{index:this.ind});
           }
           else
           {
             player.toggle();
           }
-          this.TabPlay=!this.TabPlay;
-          setplaystate(this.TabPlay)
+          this.TabPlay=!this.$store.state.play;
+          this.$store.commit("setplaystate",this.TabPlay)
         },
         prev(){
+          this.ind=musicmid.indexOf(this.$store.state.currentmusic.songmid)
           this.ind=this.ind<=0?(this.Tablen-1):(this.ind-1);
           this.tabcurrent=this.TabMusic[this.ind];
-          setcurretmusic(this.tabcurrent)
-          console.log(currentmusic)
+          this.$store.commit("setcurrentmusic",this.tabcurrent)
           player.playPrev();
           this.TabPlay=true;
-          setplaystate(this.TabPlay)
-          console.log(this.ind)
+          this.$store.commit("setplaystate",this.TabPlay)
         },
         next(){
+          this.ind=musicmid.indexOf(this.$store.state.currentmusic.songmid)
           this.ind=this.ind>=(this.Tablen-1)?0:(this.ind+1);
           this.tabcurrent=this.TabMusic[this.ind]
-          setcurretmusic(this.tabcurrent)
-          console.log(currentmusic)
+          this.$store.commit("setcurrentmusic",this.tabcurrent)
           player.playNext();
           this.TabPlay=true;
-          setplaystate(this.TabPlay)
-          console.log(this.ind);
+          this.$store.commit("setplaystate",this.TabPlay)
+
         }
+      },
+      setplaystate(p){
+        this.$store.commit("setplaystate",p)
+        console.log("调用play")
+      },
+      setcurretmusic(cm){
+        this.$store.commit("setcurrentmusic",cm)
       }
+
     }
 </script>
 

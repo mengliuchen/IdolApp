@@ -1,9 +1,7 @@
 <template>
   <div>
     <home-header :isHeader="isheader" :title="Title"></home-header>
-    <keep-alive>
-      <component :is="view"></component>
-    </keep-alive>
+    <home-content></home-content>
     <music-tab :ishome="isheader" ></music-tab>
     <home-footer></home-footer>
   </div>
@@ -21,7 +19,6 @@
       data()
         {
           return{
-            view:"HomeContent",
             Title:"Eyes on me",
             isheader:true,
           }
