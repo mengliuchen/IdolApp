@@ -198,13 +198,102 @@ player.playNext();
 4. musicmid，类型为数组，包含所有的音乐的mid
 5. musicinfo，合并所有专辑中的所有音乐，类型为数组
 
-其中play和currentmusic存储在store中，利用VUEX实现所有组件中的通信
+其中play和currentmusic存储在store中，利用VUEX实现所有组件中的通信,其余数据存储在api文件夹中的player.js中，player.js中还存储着全局共用的QMplayer对象
+```
+import axios from 'axios'
+export const player= new QMplayer({loop:true})
+export let play=false
+export let musiclist={}
+let len=0
+export let musicinfo=[]
+export let musicmid=[]
+export let currentmusic={
+  "name": "La Vie en Rose",
+  "songmid": "001R81sn4TrldD",
+  "albumid": "http://imgcache.qq.com/music/photo/album_300/11/300_albumpic_4879711_0.jpg",
+  "lyc": ""
+}
+export let ind=0
+export function getmusicinfo(){
+  axios.get("https://easy-mock.com/mock/5ce215e3d7a2d534e30f9daa/izone_members/music").then(getmusicsuccess)
+}
+function getmusicsuccess(ret){
+  let data=ret.data.data;
+  musiclist=data;
+  let mus=[];
+  let mm=[]
+  for(var key in data)
+  {
+    for(var i = 0;i<data[key].length;i++)
+    {
+      mus.push(data[key][i].songmid)
+      mm.push(data[key][i])
+    }
+  }
+  musicmid=mus;
+  musicinfo=mm;
+  len=mus.length;
+  ind=mus.indexOf(currentmusic.songmid)
+  if(player.state=="playing")
+  {
+    player.pause();
+  }
+}
+```
 
 音乐的数据挂载在Easymock上，在创建APP组件时，调用数据
 
 ## VUEX数据共享
 需要实现的是底部音乐播放组件的数据时在所有页面中共享的，这样播放按钮，以及正在播放的音乐不会出现不一致的问题
-###
+### 安装并配置Vuex
+```
+npm install vuex --save
+```
+创建store文件夹，建立index.js，在state中防止全局共用的数据play和currentmusic
+```
+import Vue from 'vue'
+import Vuex from 'vuex'
+Vue.use(Vuex)
+let state={
+  currentmusic:{
+    "name": "La Vie en Rose",
+    "songmid": "001R81sn4TrldD",
+    "albumid": "http://imgcache.qq.com/music/photo/album_300/11/300_albumpic_4879711_0.jpg",
+    "lyc": ""
+  },
+  play:false
+}
+let mutations={
+  setcurrentmusic(state,cm){
+    state.currentmusic=cm
+    console.log(state.currentmusic)
+  },
+  setplaystate(state,p){
+    state.play=p;
+    console.log(state.play)
+  }
+}
+const index=new Vuex.Store({
+state,mutations
+})
+export default index
+```
+在main.js的根实例下，将store传递仅需，其他子组件中可以使用this.$store进行调用
+```
+import store from './store'
+new Vue({
+  el: '#app',
+  router,
+  store,
+  components: { App },
+  template: '<App/>'
+})
+```
+在相应的player状态以及当前播放音乐更换的时候调用,更改store中state的数据
+```
+this.$store.commit('setplaystate',p)
+this.$store.commit('setcurrentmusic',cm)
+```
 ## 音乐列表
 
 ```
@@ -222,7 +311,7 @@ player.playNext();
 ```
 利用v-for列出所有的音乐，将musiclist中的key取出作为专辑列表标题，当音乐为currentmusic时，字体显示为绿色
 
-####playthisone，播放用户点击的音乐
+#### playthisone，播放用户点击的音乐
 
 
 
