@@ -35,6 +35,7 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 - 音乐歌词页面
 - qq音乐不提供会员专享音乐的播放，需要寻找其他的接口
 - 视频页面尚未完成
+- 首页轮播图
 - 音乐播放数据存入localStorage
 - 代码优化，代码尚且有数据加载的问题需要处理
 
