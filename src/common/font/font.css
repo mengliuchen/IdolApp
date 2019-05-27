@@ -1,0 +1,18 @@
+@font-face {
+  font-family: 'eom';
+src: url('eom.ttf');
+font-weight: normal;
+  font-style: normal;
+}
+@font-face{
+  font-family: 'chinese';
+  src: url('chinese.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face{
+  font-family: 'lishu';
+  src: url('lishu.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
