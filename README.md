@@ -163,7 +163,7 @@ CSS中,flex布局的内部元素，利用justify-content:space-around控制元�
   }
 ```
 # 音乐界面
-![image]https://github.com/mengliuchen/IdolApp/blob/master/images/music.png
+![image](https://github.com/mengliuchen/IdolApp/blob/master/images/music.png)
 ## 音乐播放
 ### 接口与方法
 使用qq音乐提供的接口以及方法
