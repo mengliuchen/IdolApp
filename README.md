@@ -294,6 +294,75 @@ new Vue({
 this.$store.commit('setplaystate',p)
 this.$store.commit('setcurrentmusic',cm)
 ```
+## 底部音乐播放组件
+创建musictab组件，利用CSS设置非主页的时候固定底部，主页时固定在底部导航栏之上
+
+使用store中存储的数据控制显示的歌曲名字以及播放状态，并为组件上的三个按钮绑定前一首，后一首，播放暂停
+
+### 数据通信
+
+DOM页面
+```
+      <div :class="{'currentplay':!ishome,'homecurrentplay':ishome}">
+        <div class="playcontent">
+          <img :src="$store.state.currentmusic.albumid" width="50px">
+          <span>{{$store.state.currentmusic.name}}</span>
+        </div>
+        <div class="playicon" >
+          <font-awesome-icon :icon="['fas','step-backward']" @click="prev"></font-awesome-icon>
+          <div @click="playornot">
+            <font-awesome-icon :icon="['fas','play']"   v-show="!$store.state.play"></font-awesome-icon>
+            <font-awesome-icon :icon="['fas','pause']"  v-show="$store.state.play"></font-awesome-icon>
+          </div>
+          <font-awesome-icon :icon="['fas','step-forward']" @click="next"></font-awesome-icon>
+        </div>
+      </div>
+```
+
+play状态变化的时候，暂停和播放键通过v-show控制是否显示，绑定显示store中的数据保证了不管切换哪个页面，这个播放组件并不会变化。
+
+### playornot
+通过toggle方法控制歌曲的播放与暂停，并且调用store中的方法改变state中play状态
+```
+ playornot(){
+          if(player.state=="ready")
+          {
+            this.ind=musicmid.indexOf(this.$store.state.currentmusic.songmid)
+            player.play(musicmid,{index:this.ind});
+          }
+          else
+          {
+            player.toggle();
+          }
+          this.TabPlay=!this.$store.state.play;
+          this.$store.commit("setplaystate",this.TabPlay)
+        }
+```
+### next()与prev()
+播放下一首与上一首，方法为记录当前播放的index，进行加1减1操作，并且根据播放列表长度调整index，赋予player.play作为参数，播放对应的音乐
+
+同时调用store中的方法改变play状态和currentmusic
+
+```
+        prev(){
+          this.ind=musicmid.indexOf(this.$store.state.currentmusic.songmid)
+          this.ind=this.ind<=0?(this.Tablen-1):(this.ind-1);
+          this.tabcurrent=this.TabMusic[this.ind];
+          this.$store.commit("setcurrentmusic",this.tabcurrent)
+          player.playPrev();
+          this.TabPlay=true;
+          this.$store.commit("setplaystate",this.TabPlay)
+        },
+        next(){
+          this.ind=musicmid.indexOf(this.$store.state.currentmusic.songmid)
+          this.ind=this.ind>=(this.Tablen-1)?0:(this.ind+1);
+          this.tabcurrent=this.TabMusic[this.ind]
+          this.$store.commit("setcurrentmusic",this.tabcurrent)
+          player.playNext();
+          this.TabPlay=true;
+          this.$store.commit("setplaystate",this.TabPlay)
+        }
+```
 ## 音乐列表
 
 ```
@@ -312,6 +381,75 @@ this.$store.commit('setcurrentmusic',cm)
 利用v-for列出所有的音乐，将musiclist中的key取出作为专辑列表标题，当音乐为currentmusic时，字体显示为绿色
 
 #### playthisone，播放用户点击的音乐
+用户点击音乐列表时调用playthisone方法，调用store中的方法改变currentmusic
+```
+        playthisone(inneritem){
+          this.play=true;
+          this.$store.commit('setplaystate',this.play)
+          this.Maincurrentmusic=inneritem;
+          this.$store.commit('setcurrentmusic',inneritem)
+          this.ind=musicmid.indexOf(inneritem.songmid)
+          player.play(musicmid,{index:this.ind})
+          if(player.state=="pause")
+          {
+            player.play(musicmid,{index:this.ind})
+          }
+        }
+```
+由于改变的是store中的数据，所有页面的音乐播放组件都会变化
 
+![image](https://github.com/mengliuchen/IdolApp/blob/master/images/home_music.png)
+![image](https://github.com/mengliuchen/IdolApp/blob/master/images/music.png)
+# Detail页面
+## :to实现动态路由
+```
+   <ul>
+      <router-link
+        tag="li"
+        class="member"
+        v-for="item of members"
+        :key="item.no"
+        :style="{'background-color':item.color}"
+        :to="'/detail/'+item.no"
+      >
+        <img :src="item.image_url" height="200px" v-if="item.no%2==0" class="img animated slideInLeft">
+        <img :src="item.image_url" height="200px" v-if="item.no%2==1" class="img animated slideInRight">
+        <div class="text animated rubberBand" animate-delay="1s">
+          <H1>{{item.name}}</H1>
+          <span>{{item.call}}</span>
+        </div>
+      </router-link>
+    </ul>
+```
+使用tag将router-link标签替换为li，点击相应的列表就可以跳转页面
+## 调用数据
+利用不同成员的no，更改调用数据URL中的参数从而调用不同的数据
+```
+  import axios from 'axios'
+    export default {
+        name: "content",
+      data(){
+        return{
+          members:[]
+        }
+      },
+        methods:{
+        getMembersInfo(){
+          axios.get("https://easy-mock.com/mock/5ce215e3d7a2d534e30f9daa/izone_members/members").then(this.getMembersInfoSucc)
+        },
+        getMembersInfoSucc(res){
+          res=res.data;
+          console.log(res)
+          if(res.ret&&res.data){
+            let data=res.data
+            this.members=data.members
+          }
+        }
+      },
+      created(){
+          this.getMembersInfo()
 
-
+      }
+    }
+```
+![image](https://github.com/mengliuchen/IdolApp/blob/master/images/detail.png)
