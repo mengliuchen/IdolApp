@@ -38,10 +38,3 @@ function getmusicsuccess(ret){
   }
   console.log(musiclist)
 }
-export function setcurretmusic(cm){
-  currentmusic=cm
-}
-export function setplaystate(p){
-  play=p;
-}
-

@@ -69,7 +69,6 @@
           player.playNext();
           this.TabPlay=true;
           this.$store.commit("setplaystate",this.TabPlay)
-
         }
       },
       setplaystate(p){
