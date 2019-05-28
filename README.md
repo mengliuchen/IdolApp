@@ -57,7 +57,7 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 - flex排布
 
 # 首页
-![image](https://github.com/mengliuchen/IdolApp/blob/master/images/home.png)
+<div align=center>![image](https://github.com/mengliuchen/IdolApp/blob/master/images/home.png)
 ### keep-alive
 由于需要加载数据，所以为了不重复调用数据，渲染DOM，利用keep-alive组件缓存不活动的组件组件,因为detail页是动态路由，选择不同成员页面内容不同所以需要exclude="Detail"
 ```<keep-alive exclude="Detail">
@@ -163,7 +163,7 @@ CSS中,flex布局的内部元素，利用justify-content:space-around控制元�
   }
 ```
 # 音乐界面
-![image](https://github.com/mengliuchen/IdolApp/blob/master/images/music.png)
+<div align=center>![image](https://github.com/mengliuchen/IdolApp/blob/master/images/music.png)
 ## 音乐播放
 ### 接口与方法
 使用qq音乐提供的接口以及方法
@@ -452,4 +452,4 @@ play状态变化的时候，暂停和播放键通过v-show控制是否显示，�
       }
     }
 ```
-![image](https://github.com/mengliuchen/IdolApp/blob/master/images/detail.png)
+<div align=center>![image](https://github.com/mengliuchen/IdolApp/blob/master/images/detail.png)
