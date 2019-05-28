@@ -58,6 +58,7 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 
 # 首页
 ![image](https://github.com/mengliuchen/IdolApp/blob/master/images/home.png)
+
 ### keep-alive
 由于需要加载数据，所以为了不重复调用数据，渲染DOM，利用keep-alive组件缓存不活动的组件组件,因为detail页是动态路由，选择不同成员页面内容不同所以需要exclude="Detail"
 ```<keep-alive exclude="Detail">
@@ -163,7 +164,8 @@ CSS中,flex布局的内部元素，利用justify-content:space-around控制元�
   }
 ```
 # 音乐界面
-![image]https://github.com/mengliuchen/IdolApp/blob/master/images/music.png
+![image](https://github.com/mengliuchen/IdolApp/blob/master/images/music.png)
+ 
 ## 音乐播放
 ### 接口与方法
 使用qq音乐提供的接口以及方法
@@ -198,13 +200,171 @@ player.playNext();
 4. musicmid，类型为数组，包含所有的音乐的mid
 5. musicinfo，合并所有专辑中的所有音乐，类型为数组
 
-其中play和currentmusic存储在store中，利用VUEX实现所有组件中的通信
+其中play和currentmusic存储在store中，利用VUEX实现所有组件中的通信,其余数据存储在api文件夹中的player.js中，player.js中还存储着全局共用的QMplayer对象
+```
+import axios from 'axios'
+export const player= new QMplayer({loop:true})
+export let play=false
+export let musiclist={}
+let len=0
+export let musicinfo=[]
+export let musicmid=[]
+export let currentmusic={
+  "name": "La Vie en Rose",
+  "songmid": "001R81sn4TrldD",
+  "albumid": "http://imgcache.qq.com/music/photo/album_300/11/300_albumpic_4879711_0.jpg",
+  "lyc": ""
+}
+export let ind=0
+export function getmusicinfo(){
+  axios.get("https://easy-mock.com/mock/5ce215e3d7a2d534e30f9daa/izone_members/music").then(getmusicsuccess)
+}
+function getmusicsuccess(ret){
+  let data=ret.data.data;
+  musiclist=data;
+  let mus=[];
+  let mm=[]
+  for(var key in data)
+  {
+    for(var i = 0;i<data[key].length;i++)
+    {
+      mus.push(data[key][i].songmid)
+      mm.push(data[key][i])
+    }
+  }
+  musicmid=mus;
+  musicinfo=mm;
+  len=mus.length;
+  ind=mus.indexOf(currentmusic.songmid)
+  if(player.state=="playing")
+  {
+    player.pause();
+  }
+}
+```
 
 音乐的数据挂载在Easymock上，在创建APP组件时，调用数据
 
 ## VUEX数据共享
 需要实现的是底部音乐播放组件的数据时在所有页面中共享的，这样播放按钮，以及正在播放的音乐不会出现不一致的问题
-###
+### 安装并配置Vuex
+```
+npm install vuex --save
+```
+创建store文件夹，建立index.js，在state中防止全局共用的数据play和currentmusic
+```
+import Vue from 'vue'
+import Vuex from 'vuex'
+Vue.use(Vuex)
+let state={
+  currentmusic:{
+    "name": "La Vie en Rose",
+    "songmid": "001R81sn4TrldD",
+    "albumid": "http://imgcache.qq.com/music/photo/album_300/11/300_albumpic_4879711_0.jpg",
+    "lyc": ""
+  },
+  play:false
+}
+let mutations={
+  setcurrentmusic(state,cm){
+    state.currentmusic=cm
+    console.log(state.currentmusic)
+  },
+  setplaystate(state,p){
+    state.play=p;
+    console.log(state.play)
+  }
+}
+const index=new Vuex.Store({
+state,mutations
+})
+export default index
+```
+在main.js的根实例下，将store传递仅需，其他子组件中可以使用this.$store进行调用
+```
+import store from './store'
+new Vue({
+  el: '#app',
+  router,
+  store,
+  components: { App },
+  template: '<App/>'
+})
+```
+在相应的player状态以及当前播放音乐更换的时候调用,更改store中state的数据
+```
+this.$store.commit('setplaystate',p)
+this.$store.commit('setcurrentmusic',cm)
+```
+## 底部音乐播放组件
+创建musictab组件，利用CSS设置非主页的时候固定底部，主页时固定在底部导航栏之上
+
+使用store中存储的数据控制显示的歌曲名字以及播放状态，并为组件上的三个按钮绑定前一首，后一首，播放暂停
+
+### 数据通信
+
+DOM页面
+```
+      <div :class="{'currentplay':!ishome,'homecurrentplay':ishome}">
+        <div class="playcontent">
+          <img :src="$store.state.currentmusic.albumid" width="50px">
+          <span>{{$store.state.currentmusic.name}}</span>
+        </div>
+        <div class="playicon" >
+          <font-awesome-icon :icon="['fas','step-backward']" @click="prev"></font-awesome-icon>
+          <div @click="playornot">
+            <font-awesome-icon :icon="['fas','play']"   v-show="!$store.state.play"></font-awesome-icon>
+            <font-awesome-icon :icon="['fas','pause']"  v-show="$store.state.play"></font-awesome-icon>
+          </div>
+          <font-awesome-icon :icon="['fas','step-forward']" @click="next"></font-awesome-icon>
+        </div>
+      </div>
+```
+
+play状态变化的时候，暂停和播放键通过v-show控制是否显示，绑定显示store中的数据保证了不管切换哪个页面，这个播放组件并不会变化。
+
+### playornot
+通过toggle方法控制歌曲的播放与暂停，并且调用store中的方法改变state中play状态
+```
+ playornot(){
+          if(player.state=="ready")
+          {
+            this.ind=musicmid.indexOf(this.$store.state.currentmusic.songmid)
+            player.play(musicmid,{index:this.ind});
+          }
+          else
+          {
+            player.toggle();
+          }
+          this.TabPlay=!this.$store.state.play;
+          this.$store.commit("setplaystate",this.TabPlay)
+        }
+```
+### next()与prev()
+播放下一首与上一首，方法为记录当前播放的index，进行加1减1操作，并且根据播放列表长度调整index，赋予player.play作为参数，播放对应的音乐
+
+同时调用store中的方法改变play状态和currentmusic
+
+```
+        prev(){
+          this.ind=musicmid.indexOf(this.$store.state.currentmusic.songmid)
+          this.ind=this.ind<=0?(this.Tablen-1):(this.ind-1);
+          this.tabcurrent=this.TabMusic[this.ind];
+          this.$store.commit("setcurrentmusic",this.tabcurrent)
+          player.playPrev();
+          this.TabPlay=true;
+          this.$store.commit("setplaystate",this.TabPlay)
+        },
+        next(){
+          this.ind=musicmid.indexOf(this.$store.state.currentmusic.songmid)
+          this.ind=this.ind>=(this.Tablen-1)?0:(this.ind+1);
+          this.tabcurrent=this.TabMusic[this.ind]
+          this.$store.commit("setcurrentmusic",this.tabcurrent)
+          player.playNext();
+          this.TabPlay=true;
+          this.$store.commit("setplaystate",this.TabPlay)
+        }
+```
 ## 音乐列表
 
 ```
@@ -222,7 +382,78 @@ player.playNext();
 ```
 利用v-for列出所有的音乐，将musiclist中的key取出作为专辑列表标题，当音乐为currentmusic时，字体显示为绿色
 
-####playthisone，播放用户点击的音乐
+#### playthisone，播放用户点击的音乐
+用户点击音乐列表时调用playthisone方法，调用store中的方法改变currentmusic
+```
+        playthisone(inneritem){
+          this.play=true;
+          this.$store.commit('setplaystate',this.play)
+          this.Maincurrentmusic=inneritem;
+          this.$store.commit('setcurrentmusic',inneritem)
+          this.ind=musicmid.indexOf(inneritem.songmid)
+          player.play(musicmid,{index:this.ind})
+          if(player.state=="pause")
+          {
+            player.play(musicmid,{index:this.ind})
+          }
+        }
+```
+由于改变的是store中的数据，所有页面的音乐播放组件都会变化
 
+![image](https://github.com/mengliuchen/IdolApp/blob/master/images/home_music.png)
+![image](https://github.com/mengliuchen/IdolApp/blob/master/images/music.png)
+# Detail页面
+## :to实现动态路由
+```
+   <ul>
+      <router-link
+        tag="li"
+        class="member"
+        v-for="item of members"
+        :key="item.no"
+        :style="{'background-color':item.color}"
+        :to="'/detail/'+item.no"
+      >
+        <img :src="item.image_url" height="200px" v-if="item.no%2==0" class="img animated slideInLeft">
+        <img :src="item.image_url" height="200px" v-if="item.no%2==1" class="img animated slideInRight">
+        <div class="text animated rubberBand" animate-delay="1s">
+          <H1>{{item.name}}</H1>
+          <span>{{item.call}}</span>
+        </div>
+      </router-link>
+    </ul>
+```
+使用tag将router-link标签替换为li，点击相应的列表就可以跳转页面
+## 调用数据
+利用不同成员的no，更改调用数据URL中的参数从而调用不同的数据
+```
+  import axios from 'axios'
+    export default {
+        name: "content",
+      data(){
+        return{
+          members:[]
+        }
+      },
+        methods:{
+        getMembersInfo(){
+          axios.get("https://easy-mock.com/mock/5ce215e3d7a2d534e30f9daa/izone_members/members").then(this.getMembersInfoSucc)
+        },
+        getMembersInfoSucc(res){
+          res=res.data;
+          console.log(res)
+          if(res.ret&&res.data){
+            let data=res.data
+            this.members=data.members
+          }
+        }
+      },
+      created(){
+          this.getMembersInfo()
 
-
+      }
+    }
+```
+![image](https://github.com/mengliuchen/IdolApp/blob/master/images/detail.png)
+  
+ 
