@@ -32,10 +32,10 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 - 音乐播放器功能，使用qq音乐提供的接口和方法，保证音乐播放模块在各个页面都能够控制音乐
 - bilibli视频嵌入
 - 用VUEX传递各个页面中的音乐播放组件
+- 视频页面
 ### 尚未完成的部分
 - 音乐歌词页面
 - qq音乐不提供会员专享音乐的播放，需要寻找其他的接口
-- 视频页面尚未完成
 - 首页轮播图
 - 代码优化，代码尚且有数据加载的问题需要处理
 
@@ -456,4 +456,81 @@ play状态变化的时候，暂停和播放键通过v-show控制是否显示，�
 ```
 ![image](https://github.com/mengliuchen/IdolApp/blob/master/images/detail.png)
   
+ # 视频页面
  
+ ## bilibili api
+ 接口使用的是http://docs.kaaass.net/showdoc/web/#/2?page_id=3中的调用接口，将需要的av号存储在easymock上，通过av号调用封面，UP主，播放数，评论数等数据
+
+data的形式为object，其中key为分类，内容为av号组成的数组
+
+## 视频列表
+通过v-for循环数据，点击时调用jumpto方法，跳转至av对应的视频页面
+```
+  <div class="contain">
+    <div class="video-list" v-for="(item,key) of vedios" :key="key">
+      <div class="video-title">
+        <b>{{key}}</b>
+      </div>
+      <div class="video-contain">
+        <div class="video" v-for="(innerItem,index) of item"  :key="index" @click="jumpto(key,index)">
+          <div class="video-img">
+            <img :src="innerItem.data.pic" width="100%;" >
+          </div>
+          <div class="video-text">
+            <div class="text-title">
+              {{innerItem.data.title}}
+            </div>
+            <div class="text-user">
+              <span><font-awesome-icon :icon="['fas','user']" style="padding-right:3px;padding-left:3px;"/>
+              {{innerItem.data.author}}</span>
+              <span>
+                <font-awesome-icon :icon="['fas','play']" style="padding-right:3px;padding-left:3px;"/>
+              {{innerItem.data.play}}
+                <font-awesome-icon :icon="['fas','comment-dots']" style="padding-right:3px;padding-left:3px;"/>
+              {{innerItem.data.review}}
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+```
+
+```
+methods:{
+      jumpto(k,i){
+          window.location.href = 'https://www.bilibili.com/video/av'+this.avs[k][i];
+        }
+        }
+```
+因为标题可能长度过长，所以设定超过一行的部分改为省略号，在CSS中添加以下内容即可
+```
+ .text-title{
+    font-size:10px;
+    text-align: left;
+    position: relative;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: break-all;
+  }
+```
+## 音乐播放插件的处理
+默认打开视频页面的时候，音乐播放停止，利用路由跳转进行监测，如果跳转到了video页面，则player停止，play状态设定为false
+
+在home.vue中监控
+```
+      watch:{
+          $route(to,from){
+            console.log(to.path)
+            if(to.path=="/vedio")
+            {
+              player.pause();
+              this.$store.commit('setplaystate',false)
+            }
+          }
+      }
+```
