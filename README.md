@@ -458,8 +458,12 @@ play状态变化的时候，暂停和播放键通过v-show控制是否显示，�
   
  # 视频页面
  这个页面模仿了哔哩哔哩视频网站，并且调用了哔哩哔哩的数据
- ![image](https://github.com/mengliuchen/IdolApp/blob/master/images/video1.png)
+ 
+![image](https://github.com/mengliuchen/IdolApp/blob/master/images/video1.png)
 ![image](https://github.com/mengliuchen/IdolApp/blob/master/images/video2.png)
+
+跳转过后，是手机版的bilibili
+![image](https://github.com/mengliuchen/IdolApp/blob/master/images/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20190529160735.png)
  ## bilibili api
  接口使用的是http://docs.kaaass.net/showdoc/web/#/2?page_id=3中的调用接口，将需要的av号存储在easymock上，通过av号调用封面，UP主，播放数，评论数等数据
 
