@@ -25,7 +25,6 @@
 
   .header{
     display:flex;
-
     background-color: #ec56a0;
     color:white;
     height:50px;

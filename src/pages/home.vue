@@ -25,6 +25,16 @@
         },
       mounted(){
 
+      },
+      watch:{
+          $route(to,from){
+            console.log(to.path)
+            if(to.path=="/vedio")
+            {
+              player.pause();
+              this.$store.commit('setplaystate',false)
+            }
+          }
       }
     }
 </script>

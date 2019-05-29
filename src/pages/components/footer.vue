@@ -22,8 +22,9 @@
     </div>
 </template>
 <script>
+
     export default {
-        name: "footer"
+        name: "footer",
     }
 </script>
 
