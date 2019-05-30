@@ -61,7 +61,9 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 
 ### keep-alive
 由于需要加载数据，所以为了不重复调用数据，渲染DOM，利用keep-alive组件缓存不活动的组件组件,因为detail页是动态路由，选择不同成员页面内容不同所以需要exclude="Detail"
-```<keep-alive exclude="Detail">
+
+```
+<keep-alive exclude="Detail">
       <router-view/>
     </keep-alive>
 ```
